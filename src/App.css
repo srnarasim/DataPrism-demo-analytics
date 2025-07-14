@@ -1,0 +1,60 @@
+/**
+ * Application Styles for DataPrism Demo Analytics
+ */
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom styles for DataPrism Demo */
+.dataprism-demo {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Loading animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* CDN status indicators */
+.cdn-status-success {
+  @apply bg-green-50 border-green-200 text-green-800;
+}
+
+.cdn-status-loading {
+  @apply bg-blue-50 border-blue-200 text-blue-800;
+}
+
+.cdn-status-error {
+  @apply bg-red-50 border-red-200 text-red-800;
+}
+
+/* Code blocks */
+code {
+  @apply bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+pre code {
+  @apply bg-transparent p-0;
+}
+
+/* Focus styles for accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+}
+
+/* Responsive typography */
+@media (max-width: 640px) {
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+}
