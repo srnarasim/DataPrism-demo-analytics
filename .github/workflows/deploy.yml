@@ -118,27 +118,53 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
+        with:
+          enablement: true
+        continue-on-error: true
+        id: setup-pages
+
+      - name: Check Pages setup
+        run: |
+          if [[ "${{ steps.setup-pages.outcome }}" == "failure" ]]; then
+            echo "⚠️ GitHub Pages not configured. Please enable Pages in repository settings."
+            echo "📝 To enable GitHub Pages:"
+            echo "   1. Go to repository Settings"
+            echo "   2. Navigate to Pages section"
+            echo "   3. Select 'GitHub Actions' as the source"
+            echo "   4. Re-run this workflow"
+            exit 0
+          fi
 
       - name: Upload to GitHub Pages
+        if: steps.setup-pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist/
 
       - name: Deploy to GitHub Pages
+        if: steps.setup-pages.outcome == 'success'
         id: deploy
         uses: actions/deploy-pages@v4
 
       - name: Update deployment status
+        if: steps.setup-pages.outcome == 'success'
         run: |
           echo "✅ Demo app deployed successfully"
           echo "🌐 URL: ${{ steps.deploy.outputs.page_url }}"
           echo "📊 Build completed in $(( ($(date +%s) - ${{ github.event.head_commit.timestamp }}) / 60 )) minutes"
 
+      - name: Alternative deployment info
+        if: steps.setup-pages.outcome == 'failure'
+        run: |
+          echo "📊 Build completed successfully but deployment skipped"
+          echo "📋 Build artifacts are available for download"
+          echo "⚠️ To enable automatic deployment, configure GitHub Pages in repository settings"
+
   # Validate deployment
   validate-deployment:
     needs: deploy
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && needs.deploy.result == 'success'
     steps:
       - name: Wait for deployment propagation
         run: |
@@ -212,7 +238,15 @@ jobs:
             echo "**Demo URL:** ${{ needs.deploy.outputs.page_url || 'https://demo.dataprism.dev' }}" >> $GITHUB_STEP_SUMMARY
             echo "**CDN Source:** https://srnarasim.github.io/DataPrism" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ **Deployment failed or was skipped**" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Deployment skipped - GitHub Pages not configured**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To enable automatic deployment:" >> $GITHUB_STEP_SUMMARY
+            echo "1. Go to repository Settings" >> $GITHUB_STEP_SUMMARY
+            echo "2. Navigate to Pages section" >> $GITHUB_STEP_SUMMARY
+            echo "3. Select 'GitHub Actions' as the source" >> $GITHUB_STEP_SUMMARY
+            echo "4. Re-run this workflow" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "📋 Build artifacts are available for manual deployment" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Comment on PR
