@@ -9,6 +9,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/DataPrism-demo-analytics/',
   
   // Test configuration
   test: {
