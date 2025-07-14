@@ -14,7 +14,21 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './src/__tests__/setup.ts',
+    setupFiles: ['./tests/setup.ts'],
+    include: ['tests/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
+      threshold: {
+        global: {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80
+        }
+      }
+    }
   },
   
   // Remove DataPrism package aliases - use CDN instead
@@ -69,6 +83,9 @@ export default defineConfig({
     // Performance optimizations
     chunkSizeWarningLimit: 500, // 500KB limit as specified in PRP
   },
+
+  // WebAssembly support (required for DataPrism)
+  assetsInclude: ['**/*.wasm'],
 
   // Environment variables
   define: {

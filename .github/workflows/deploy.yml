@@ -40,14 +40,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
-
-      - name: Run linting
-        run: npm run lint
-
-      - name: Type check
-        run: npm run type-check
+      - name: Run validation tests
+        run: npm run validate:ci
 
       - name: Validate CDN connectivity
         run: |

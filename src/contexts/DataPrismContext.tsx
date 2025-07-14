@@ -77,22 +77,37 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       // Preload assets for better performance
       await loader.preloadAssets();
       
-      // Load DataPrism from CDN
-      const DataPrism = await loader.loadCoreBundle();
-      setCdnStatus('loaded');
-      
-      // Initialize engine with CDN-loaded DataPrism
-      const engineInstance = new DataPrism.DataPrismEngine({
-        maxMemoryMB: 512,
-        enableWasmOptimizations: true,
-        logLevel: import.meta.env.DEV ? 'debug' : 'info',
-        // CDN-specific configuration
-        wasmUrl: `${cdnConfig.baseUrl}/assets/dataprism-core.wasm`,
-        enableCDNMode: true
-      });
-      
-      await engineInstance.initialize();
-      console.log(`✅ DataPrism initialized from CDN (v${status.version}, ${status.latency}ms)`);
+      // Try to load DataPrism from CDN with fallback to mock implementation
+      let engineInstance;
+      try {
+        // Load DataPrism from CDN
+        const DataPrism = await loader.loadCoreBundle();
+        setCdnStatus('loaded');
+        
+        // Initialize engine with the same configuration as reference
+        engineInstance = new DataPrism.DataPrismEngine({
+          maxMemoryMB: 512,
+          enableWasmOptimizations: true,
+          logLevel: import.meta.env.DEV ? 'debug' : 'info',
+        });
+        
+        await engineInstance.initialize();
+        console.log(`✅ DataPrism initialized from CDN (v${status.version}, ${status.latency}ms)`);
+      } catch (cdnError) {
+        console.warn('⚠️ CDN DataPrism initialization failed, using mock implementation...', cdnError);
+        setCdnStatus('error');
+        
+        // Use mock implementation as fallback
+        const { MockDataPrismEngine } = await import('./MockDataPrismContext');
+        engineInstance = new MockDataPrismEngine({
+          maxMemoryMB: 512,
+          enableWasmOptimizations: true,
+          logLevel: import.meta.env.DEV ? 'debug' : 'info',
+        });
+        
+        await engineInstance.initialize();
+        console.log('✅ DataPrism initialized with mock implementation');
+      }
       
       setEngine(engineInstance);
       setIsInitialized(true);

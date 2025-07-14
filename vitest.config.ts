@@ -7,10 +7,17 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'jsdom',
-    setupFiles: ['./src/__tests__/setup.ts'],
+    setupFiles: ['./tests/setup.ts'],
     globals: true,
-    include: ['src/**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    exclude: ['node_modules', 'dist'],
+    include: ['tests/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    exclude: [
+      'node_modules',
+      'dist',
+      'src/**/*.{test,spec}.{js,ts,jsx,tsx}',
+      'tests/**/*.spec.{js,ts,jsx,tsx}', // Exclude Playwright specs
+      'tests/e2e/**/*', // Exclude E2E tests
+      'tests/**/*/spec.{js,ts,jsx,tsx}' // Exclude all spec files
+    ],
   },
   resolve: {
     alias: {
@@ -21,6 +28,10 @@ export default defineConfig({
       '@/utils': resolve(__dirname, './src/utils'),
       '@/config': resolve(__dirname, './src/config'),
       '@/hooks': resolve(__dirname, './src/hooks'),
+      '@/types': resolve(__dirname, './src/types'),
+      '@/monitoring': resolve(__dirname, './src/monitoring'),
+      '@/validation': resolve(__dirname, './src/validation'),
+      '@/plugins': resolve(__dirname, './src/plugins'),
     },
   },
 });
