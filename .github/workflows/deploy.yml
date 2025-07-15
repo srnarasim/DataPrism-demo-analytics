@@ -151,7 +151,7 @@ jobs:
         run: |
           echo "✅ Demo app deployed successfully"
           echo "🌐 URL: ${{ steps.deploy.outputs.page_url }}"
-          echo "📊 Build completed in $(( ($(date +%s) - ${{ github.event.head_commit.timestamp }}) / 60 )) minutes"
+          echo "📊 Build completed successfully at $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
 
       - name: Alternative deployment info
         if: steps.setup-pages.outcome == 'failure'
