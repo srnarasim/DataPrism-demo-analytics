@@ -202,10 +202,10 @@ VITE_DATAPRISM_VERSION=dev
 **1. CDN Loading Failures**
 ```bash
 # Check CDN status
-curl -I https://srnarasim.github.io/DataPrism/manifest.json
+curl -I https://srnarasim.github.io/DataPrism/cdn/manifest.json
 
 # Verify CORS headers
-curl -H "Origin: https://your-domain.com" https://srnarasim.github.io/DataPrism/dataprism.umd.js
+curl -H "Origin: https://your-domain.com" https://srnarasim.github.io/DataPrism/cdn/dataprism.umd.js
 ```
 
 **2. Bundle Size Exceeded**
@@ -221,7 +221,7 @@ npm run analyze
 **3. WebAssembly Issues**
 ```bash
 # Verify WASM support
-curl https://srnarasim.github.io/DataPrism/assets/
+curl https://srnarasim.github.io/DataPrism/cdn/assets/
 
 # Check browser compatibility
 # Chrome/Firefox/Safari 14+ required
@@ -257,7 +257,7 @@ The application automatically tracks:
 curl -f https://your-domain.com
 
 # Check CDN connectivity
-curl -f https://srnarasim.github.io/DataPrism/manifest.json
+curl -f https://srnarasim.github.io/DataPrism/cdn/manifest.json
 
 # Test application functionality
 npm run test:e2e -- --headed

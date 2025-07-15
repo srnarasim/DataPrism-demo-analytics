@@ -155,7 +155,7 @@ async function validateCDNConnectivity(results) {
   
   try {
     // Test CDN manifest availability
-    const response = await fetch('https://srnarasim.github.io/DataPrism/manifest.json');
+    const response = await fetch('https://srnarasim.github.io/DataPrism/cdn/manifest.json');
     
     if (response.ok) {
       const manifest = await response.json();
@@ -168,7 +168,7 @@ async function validateCDNConnectivity(results) {
     results.total++;
 
     // Test core bundle availability
-    const coreResponse = await fetch('https://srnarasim.github.io/DataPrism/dataprism.umd.js');
+    const coreResponse = await fetch('https://srnarasim.github.io/DataPrism/cdn/dataprism.umd.js');
     
     if (coreResponse.ok) {
       console.log('   ✅ CDN core bundle accessible');
