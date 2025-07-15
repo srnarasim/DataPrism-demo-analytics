@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { CDNAssetLoader } from '@/utils/cdnLoader';
 import { getCDNConfig } from '@/config/cdn';
+import { arrowLoader } from '@/utils/arrowLoader';
 
 interface DataPrismContextValue {
   engine: any | null;
@@ -77,6 +78,11 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       // Preload assets for better performance
       await loader.preloadAssets();
       
+      // Preload Apache Arrow locally before DataPrism initialization
+      console.log('📦 Preloading Apache Arrow dependencies...');
+      await arrowLoader.ensureArrowLoaded();
+      console.log('✅ Apache Arrow preloaded successfully');
+      
       // Try to load DataPrism from CDN with fallback to mock implementation
       let engineInstance;
       try {
@@ -84,56 +90,122 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         const DataPrism = await loader.loadCoreBundle();
         setCdnStatus('loaded');
         
-        // Initialize engine with the same configuration as reference
+        // Initialize engine with enhanced dependency management configuration
         engineInstance = new DataPrism.DataPrismEngine({
           maxMemoryMB: 512,
           enableWasmOptimizations: true,
           logLevel: import.meta.env.DEV ? 'debug' : 'info',
+          // Enhanced dependency management options from issue #17
+          dependencyManagement: {
+            enabled: true,
+            timeout: 30000,
+            retries: 5,
+            progressTracking: true,
+            preloadDependencies: true
+          }
         });
         
         await engineInstance.initialize();
         
-        console.log('⏳ DataPrism core initialized, now checking Arrow dependencies... [v2]');
-        
-        // Wait for DuckDB to be fully ready before proceeding
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log('⏳ DataPrism core initialized, now checking enhanced dependency management... [v4]');
         
         try {
-          // Implement robust Arrow dependency waiting with exponential backoff
-          await waitForArrowDependency(engineInstance);
+          // Verify local Arrow is still available
+          if (!arrowLoader.isArrowReady()) {
+            console.log('⚠️ Local Apache Arrow not ready, reloading...');
+            await arrowLoader.ensureArrowLoaded();
+          }
+          
+          // Use enhanced dependency management from issue #17 resolution
+          if (typeof engineInstance.waitForReady === 'function') {
+            console.log('🔄 Using enhanced dependency readiness checking with local Arrow...');
+            
+            try {
+              await engineInstance.waitForReady({
+                timeout: 30000,
+                retries: 5,
+                onProgress: (progress: any) => {
+                  console.log(`📊 Loading progress: ${progress.percentage}% - ${progress.status}`);
+                }
+              });
+              console.log('✅ Enhanced dependency management confirmed all dependencies loaded');
+            } catch (enhancedError) {
+              console.warn('⚠️ Enhanced dependency management failed, but local Arrow is available. Testing direct query...', enhancedError);
+              
+              // Since we have local Arrow, test if DataPrism can work with it
+              const testResult = await engineInstance.query('SELECT 1 as arrow_test');
+              if (testResult && !testResult.error) {
+                console.log('✅ DataPrism working with local Apache Arrow despite enhanced dependency management failure');
+              } else {
+                console.warn('⚠️ DataPrism still not working with local Arrow, trying manual resolution...', testResult.error);
+                await resolveApacheArrowDependency(engineInstance);
+              }
+            }
+          } else {
+            console.log('⚠️ Enhanced dependency management not available, testing with local Arrow...');
+            
+            // Test if DataPrism works with local Arrow
+            const testResult = await engineInstance.query('SELECT 1 as arrow_test');
+            if (testResult && testResult.error) {
+              console.warn('⚠️ DataPrism not working with local Arrow, trying manual resolution...', testResult.error);
+              await waitForArrowDependency(engineInstance);
+            } else {
+              console.log('✅ DataPrism working with local Apache Arrow');
+            }
+          }
           
           console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
-          console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
+          console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility, local Apache Arrow');
         } catch (arrowError) {
-          console.error('❌ Arrow dependency loading failed:', arrowError);
+          console.error('❌ Enhanced dependency loading failed:', arrowError);
           throw arrowError;
         }
       } catch (cdnError) {
         const errorMessage = cdnError instanceof Error ? cdnError.message : String(cdnError);
         
-        // Provide specific guidance for CDN issues (should be rare with hybrid architecture)
+        // Enhanced error handling with more contextual error messages (issue #17)
         if (errorMessage.includes('selectBundle') || errorMessage.includes('DuckDB')) {
           console.warn('⚠️ CDN DataPrism DuckDB initialization failed, using mock implementation...', {
             error: errorMessage,
-            note: 'This may indicate a network issue with the hybrid loading mechanism'
+            context: 'DuckDB WebAssembly module failed to load',
+            suggestion: 'Check network connectivity and CORS settings',
+            fallbackActive: true
           });
         } else if (errorMessage.includes('timeout') || errorMessage.includes('network')) {
           console.warn('⚠️ CDN DataPrism network timeout, using mock implementation...', {
             error: errorMessage,
-            note: 'Hybrid architecture requires stable network for worker loading'
+            context: 'Network timeout during hybrid architecture loading',
+            suggestion: 'Increase timeout or check network stability',
+            fallbackActive: true
           });
         } else if (errorMessage.includes('connection') || errorMessage.includes('from')) {
           console.warn('⚠️ CDN DataPrism connection not ready, using mock implementation...', {
             error: errorMessage,
-            note: 'DuckDB connection may need more time to initialize in hybrid mode'
+            context: 'DuckDB connection initialization failed',
+            suggestion: 'Enhanced dependency management should resolve this automatically',
+            fallbackActive: true
           });
         } else if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
           console.warn('⚠️ CDN DataPrism Apache Arrow dependency issue, using mock implementation...', {
             error: errorMessage,
-            note: 'Apache Arrow libraries may need more time to load in hybrid mode'
+            context: 'Apache Arrow libraries not ready (should be resolved with enhanced dependency management)',
+            suggestion: 'This should be automatically handled by the new waitForReady() method',
+            fallbackActive: true
+          });
+        } else if (errorMessage.includes('waitForReady') || errorMessage.includes('dependency')) {
+          console.warn('⚠️ CDN DataPrism enhanced dependency management failed, using mock implementation...', {
+            error: errorMessage,
+            context: 'Enhanced dependency management from issue #17 not working as expected',
+            suggestion: 'Check if DataPrism CDN has been updated with latest dependency management features',
+            fallbackActive: true
           });
         } else {
-          console.warn('⚠️ CDN DataPrism initialization failed, using mock implementation...', cdnError);
+          console.warn('⚠️ CDN DataPrism initialization failed, using mock implementation...', {
+            error: errorMessage,
+            context: 'Unknown initialization error',
+            suggestion: 'Check console for more details and network connectivity',
+            fallbackActive: true
+          });
         }
         setCdnStatus('error');
         
@@ -162,6 +234,93 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsInitializing(false);
     }
   }, [isInitializing, isInitialized]);
+
+  const resolveApacheArrowDependency = async (engineInstance: any) => {
+    console.log('🔧 Starting manual Apache Arrow dependency resolution...');
+    
+    try {
+      // First, check if DataPrism has a manual dependency registration method
+      if (typeof engineInstance.registerDependency === 'function') {
+        console.log('🔄 Attempting to use DataPrism manual dependency registration...');
+        
+        try {
+          await engineInstance.registerDependency('apache-arrow', {
+            url: 'https://unpkg.com/apache-arrow@17.0.0/dist/Arrow.dom.min.js',
+            timeout: 15000,
+            retries: 3
+          });
+          console.log('✅ DataPrism manual dependency registration succeeded');
+          return;
+        } catch (regError) {
+          console.warn('⚠️ DataPrism manual dependency registration failed, trying direct loading...', regError);
+        }
+      }
+      
+      // Fallback to direct loading with COEP-compatible approach
+      console.log('🔄 Attempting direct Apache Arrow loading...');
+      
+      // Create a proxy approach that works with COEP restrictions
+      const loadArrowViaProxy = async () => {
+        try {
+          // Use fetch to load the script content (this might work better with COEP)
+          const response = await fetch('https://unpkg.com/apache-arrow@17.0.0/dist/Arrow.dom.min.js', {
+            mode: 'cors',
+            cache: 'force-cache'
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          const scriptContent = await response.text();
+          
+          // Execute the script content
+          const script = document.createElement('script');
+          script.textContent = scriptContent;
+          document.head.appendChild(script);
+          
+          // Wait for initialization
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          if (typeof (window as any).Arrow !== 'undefined') {
+            console.log('✅ Apache Arrow loaded via proxy method');
+            return true;
+          }
+          
+          throw new Error('Arrow not available after proxy loading');
+        } catch (error) {
+          console.warn('⚠️ Proxy loading failed:', error);
+          return false;
+        }
+      };
+      
+      // Try proxy loading first
+      const proxySuccess = await loadArrowViaProxy();
+      
+      if (!proxySuccess) {
+        console.log('🔄 Proxy loading failed, trying alternative approach...');
+        
+        // Try to trigger DataPrism's internal dependency loading
+        if (typeof engineInstance.reloadDependencies === 'function') {
+          console.log('🔄 Triggering DataPrism internal dependency reload...');
+          await engineInstance.reloadDependencies(['apache-arrow']);
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+        
+        // Final test
+        const testResult = await engineInstance.query('SELECT 1 as arrow_test');
+        if (testResult && testResult.error) {
+          throw new Error(`Arrow dependency still not working: ${testResult.error.message}`);
+        }
+      }
+      
+      console.log('✅ Manual Apache Arrow dependency resolution completed successfully');
+      
+    } catch (error) {
+      console.error('❌ Manual Apache Arrow dependency resolution failed:', error);
+      throw error;
+    }
+  };
 
   const waitForArrowDependency = async (engineInstance: any) => {
     console.log('🔍 Starting Apache Arrow dependency verification... [v2]');

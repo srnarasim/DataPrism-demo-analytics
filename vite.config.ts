@@ -9,7 +9,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/DataPrism-demo-analytics/',
+  base: process.env.NODE_ENV === 'production' ? '/DataPrism-demo-analytics/' : '/',
   
   // Test configuration
   test: {
@@ -48,7 +48,11 @@ export default defineConfig({
   // Required headers for WebAssembly (when loading from CDN)
   server: {
     port: 3000,
-    headers: {
+    headers: process.env.NODE_ENV === 'development' ? {
+      // Disabled COEP for development to allow external CDN resources
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    } : {
+      // Production headers for WebAssembly
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
     },
@@ -58,6 +62,7 @@ export default defineConfig({
   preview: {
     port: 3000,
     headers: {
+      // Production headers for WebAssembly
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Cross-Origin-Opener-Policy': 'same-origin',
     },

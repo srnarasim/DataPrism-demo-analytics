@@ -23,8 +23,8 @@ export const defaultCDNConfig: CDNConfig = {
   version: 'latest',
   fallback: {
     enabled: true,
-    retries: 3,
-    timeout: 20000 // Increased timeout for hybrid loading
+    retries: 5, // Increased retries for enhanced dependency management
+    timeout: 30000 // Extended timeout for enhanced dependency management
   }
 };
 
@@ -51,12 +51,14 @@ export const getCDNAssetUrls = (config: CDNConfig = getCDNConfig()) => {
   };
 };
 
-// Performance configuration for Hybrid Architecture
+// Performance configuration for Hybrid Architecture with Enhanced Dependency Management
 export const CDN_PERFORMANCE_CONFIG = {
   maxLoadTime: 8000, // Increased for hybrid loading with workers
-  maxRetries: 3,
+  maxRetries: 5, // Increased retries for enhanced dependency management
   retryDelay: 1000,
   cacheDuration: 3600000, // 1 hour
-  hybridLoadingTimeout: 15000, // Timeout for complete hybrid initialization
+  hybridLoadingTimeout: 30000, // Extended timeout for enhanced dependency management
   workerLoadTimeout: 10000, // Timeout for DuckDB worker loading
+  dependencyTimeout: 30000, // Timeout for dependency readiness checking
+  progressTracking: true, // Enable progress tracking for enhanced dependency management
 } as const;
