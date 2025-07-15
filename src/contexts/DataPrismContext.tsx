@@ -93,7 +93,7 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         
         await engineInstance.initialize();
         
-        console.log('⏳ DataPrism core initialized, now checking Arrow dependencies...');
+        console.log('⏳ DataPrism core initialized, now checking Arrow dependencies... [v2]');
         
         // Wait for DuckDB to be fully ready before proceeding
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -164,7 +164,7 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [isInitializing, isInitialized]);
 
   const waitForArrowDependency = async (engineInstance: any) => {
-    console.log('🔍 Starting Apache Arrow dependency verification...');
+    console.log('🔍 Starting Apache Arrow dependency verification... [v2]');
     const maxRetries = 5;
     const baseDelay = 1000; // 1 second
     
