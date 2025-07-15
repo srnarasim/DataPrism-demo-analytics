@@ -77,7 +77,7 @@ export const CDNStatus: React.FC = () => {
           <div className="mt-2 text-sm">
             <div className="flex items-center space-x-2 text-yellow-600">
               <span>ℹ️</span>
-              <span>Using mock implementation - CDN hybrid architecture unavailable (network issue)</span>
+              <span>Using mock implementation - CDN hybrid architecture unavailable (dependency loading issue)</span>
             </div>
           </div>
         )}

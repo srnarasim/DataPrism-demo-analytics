@@ -102,8 +102,26 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
           console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
         } catch (connectionError) {
-          console.warn('⚠️ DuckDB connection not ready, retrying initialization...', connectionError);
-          throw new Error(`DuckDB connection failed: ${connectionError instanceof Error ? connectionError.message : String(connectionError)}`);
+          const errorMessage = connectionError instanceof Error ? connectionError.message : String(connectionError);
+          
+          // Check for specific Arrow/RecordBatchReader issues
+          if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
+            console.warn('⚠️ Apache Arrow dependency issue detected, retrying with alternative approach...', connectionError);
+            // Try to wait longer for workers to fully initialize
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            
+            try {
+              await engineInstance.query('SELECT 1 as test');
+              console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms) - Arrow loaded`);
+              console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
+            } catch (secondError) {
+              console.warn('⚠️ DuckDB connection still not ready after Arrow wait, falling back...', secondError);
+              throw new Error(`DuckDB connection failed: ${errorMessage}`);
+            }
+          } else {
+            console.warn('⚠️ DuckDB connection not ready, retrying initialization...', connectionError);
+            throw new Error(`DuckDB connection failed: ${errorMessage}`);
+          }
         }
       } catch (cdnError) {
         const errorMessage = cdnError instanceof Error ? cdnError.message : String(cdnError);
@@ -123,6 +141,11 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
           console.warn('⚠️ CDN DataPrism connection not ready, using mock implementation...', {
             error: errorMessage,
             note: 'DuckDB connection may need more time to initialize in hybrid mode'
+          });
+        } else if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
+          console.warn('⚠️ CDN DataPrism Apache Arrow dependency issue, using mock implementation...', {
+            error: errorMessage,
+            note: 'Apache Arrow libraries may need more time to load in hybrid mode'
           });
         } else {
           console.warn('⚠️ CDN DataPrism initialization failed, using mock implementation...', cdnError);
