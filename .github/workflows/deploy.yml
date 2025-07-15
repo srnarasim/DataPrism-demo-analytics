@@ -173,7 +173,7 @@ jobs:
 
       - name: Validate deployment
         run: |
-          DEPLOYMENT_URL="${{ needs.deploy.outputs.page_url || 'https://demo.dataprism.dev' }}"
+          DEPLOYMENT_URL="${{ needs.deploy.outputs.page_url || 'https://srnarasim.github.io/DataPrism-demo-analytics/' }}"
           
           echo "🔍 Validating deployment at: $DEPLOYMENT_URL"
           
@@ -195,7 +195,7 @@ jobs:
 
       - name: Performance validation
         run: |
-          DEPLOYMENT_URL="${{ needs.deploy.outputs.page_url || 'https://demo.dataprism.dev' }}"
+          DEPLOYMENT_URL="${{ needs.deploy.outputs.page_url || 'https://srnarasim.github.io/DataPrism-demo-analytics/' }}"
           
           echo "📊 Running performance tests..."
           
@@ -235,7 +235,7 @@ jobs:
           if [[ "${{ needs.deploy.result }}" == "success" ]]; then
             echo "🎉 **Deployment completed successfully!**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**Demo URL:** ${{ needs.deploy.outputs.page_url || 'https://demo.dataprism.dev' }}" >> $GITHUB_STEP_SUMMARY
+            echo "**Demo URL:** ${{ needs.deploy.outputs.page_url || 'https://srnarasim.github.io/DataPrism-demo-analytics/' }}" >> $GITHUB_STEP_SUMMARY
             echo "**CDN Source:** https://srnarasim.github.io/DataPrism" >> $GITHUB_STEP_SUMMARY
           else
             echo "⚠️ **Deployment skipped - GitHub Pages not configured**" >> $GITHUB_STEP_SUMMARY
