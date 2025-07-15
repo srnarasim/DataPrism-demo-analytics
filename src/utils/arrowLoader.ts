@@ -38,7 +38,7 @@ export class ArrowLoader {
 
   private async loadArrow(): Promise<void> {
     try {
-      console.log('📦 Loading Apache Arrow from local bundle...');
+      console.log('📦 Loading Apache Arrow from local bundle (v17.0.0)...');
       
       // Make Arrow available globally for DataPrism
       (window as any).Arrow = Arrow;
