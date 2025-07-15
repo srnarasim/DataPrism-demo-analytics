@@ -93,14 +93,21 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         
         await engineInstance.initialize();
         
+        console.log('⏳ DataPrism core initialized, now checking Arrow dependencies...');
+        
         // Wait for DuckDB to be fully ready before proceeding
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Implement robust Arrow dependency waiting with exponential backoff
-        await waitForArrowDependency(engineInstance);
-        
-        console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
-        console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
+        try {
+          // Implement robust Arrow dependency waiting with exponential backoff
+          await waitForArrowDependency(engineInstance);
+          
+          console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
+          console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
+        } catch (arrowError) {
+          console.error('❌ Arrow dependency loading failed:', arrowError);
+          throw arrowError;
+        }
       } catch (cdnError) {
         const errorMessage = cdnError instanceof Error ? cdnError.message : String(cdnError);
         
@@ -157,6 +164,7 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [isInitializing, isInitialized]);
 
   const waitForArrowDependency = async (engineInstance: any) => {
+    console.log('🔍 Starting Apache Arrow dependency verification...');
     const maxRetries = 5;
     const baseDelay = 1000; // 1 second
     
@@ -169,12 +177,15 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         
         if (testResult && testResult.data) {
           console.log('✅ Apache Arrow dependency confirmed working');
+          console.log('📊 Query result structure:', testResult);
           return;
         } else {
+          console.warn('⚠️ Query succeeded but returned no data structure');
           throw new Error('Query returned no data');
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        console.log(`💥 Error during Arrow test (attempt ${attempt}):`, error);
         
         if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
           console.warn(`⚠️ Arrow dependency not ready (attempt ${attempt}/${maxRetries}):`, errorMessage);
