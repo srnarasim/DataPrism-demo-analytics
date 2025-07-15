@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-07-15T11:44:55.605Z",
+  "timestamp": "2025-07-15T22:20:08.956Z",
   "summary": {
     "total": 6,
     "passed": 6,
@@ -10,7 +10,7 @@
     {
       "name": "Plugin File Validation",
       "status": "passed",
-      "duration": 0,
+      "duration": 1,
       "result": [
         {
           "file": "src/plugins/CSVProcessorPlugin.ts",
@@ -42,7 +42,7 @@
     {
       "name": "Plugin Interface Verification",
       "status": "passed",
-      "duration": 1,
+      "duration": 0,
       "result": {
         "message": "All required exports found",
         "exports": [
@@ -92,11 +92,10 @@
     {
       "name": "TypeScript Compilation",
       "status": "passed",
-      "duration": 791,
+      "duration": 1674,
       "result": {
-        "message": "TypeScript compilation has issues",
-        "output": "src/plugins/ChartJSVisualizationPlugin.ts(94,10): error TS1005: '>' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(94,15): error TS1005: ')' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(94,17): error TS1136: Property assignment expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(94,46): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(94,62): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(94,87): error TS1005: ',' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(95,15): error TS1005: '>' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(95,18): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(95,31): error TS1161: Unterminated regular expression literal.\nsrc/plugins/ChartJSVisualizationPlugin.ts(97,14): error TS1005: '>' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(97,19): error TS1005: ')' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(99,14): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(100,16): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(101,18): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(102,14): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(103,11): error TS1109: Expression expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(105,13): error TS1005: '>' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(105,20): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(106,20): error TS1136: Property assignment expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(108,23): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(109,30): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(110,21): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(111,27): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(112,21): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(114,11): error TS1109: Expression expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(116,12): error TS1161: Unterminated regular expression literal.\nsrc/plugins/ChartJSVisualizationPlugin.ts(118,22): error TS1136: Property assignment expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(118,25): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(118,48): error TS1128: Declaration or statement expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(119,20): error TS1136: Property assignment expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(121,23): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(122,30): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(123,21): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(124,27): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(125,21): error TS1005: ';' expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(126,14): error TS1128: Declaration or statement expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(127,11): error TS1109: Expression expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(129,12): error TS1161: Unterminated regular expression literal.\nsrc/plugins/ChartJSVisualizationPlugin.ts(130,10): error TS1161: Unterminated regular expression literal.\nsrc/plugins/ChartJSVisualizationPlugin.ts(131,7): error TS1128: Declaration or statement expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(131,8): error TS1128: Declaration or statement expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(132,6): error TS1110: Type expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(133,3): error TS1128: Declaration or statement expected.\nsrc/plugins/ChartJSVisualizationPlugin.ts(134,1): error TS1128: Declaration or statement expected.\n",
-        "warning": true
+        "message": "TypeScript compilation successful",
+        "output": "No output"
       }
     },
     {
