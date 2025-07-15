@@ -96,33 +96,11 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         // Wait for DuckDB to be fully ready before proceeding
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Verify DuckDB connection is established
-        try {
-          await engineInstance.query('SELECT 1 as test');
-          console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
-          console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
-        } catch (connectionError) {
-          const errorMessage = connectionError instanceof Error ? connectionError.message : String(connectionError);
-          
-          // Check for specific Arrow/RecordBatchReader issues
-          if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
-            console.warn('⚠️ Apache Arrow dependency issue detected, retrying with alternative approach...', connectionError);
-            // Try to wait longer for workers to fully initialize
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            
-            try {
-              await engineInstance.query('SELECT 1 as test');
-              console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms) - Arrow loaded`);
-              console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
-            } catch (secondError) {
-              console.warn('⚠️ DuckDB connection still not ready after Arrow wait, falling back...', secondError);
-              throw new Error(`DuckDB connection failed: ${errorMessage}`);
-            }
-          } else {
-            console.warn('⚠️ DuckDB connection not ready, retrying initialization...', connectionError);
-            throw new Error(`DuckDB connection failed: ${errorMessage}`);
-          }
-        }
+        // Implement robust Arrow dependency waiting with exponential backoff
+        await waitForArrowDependency(engineInstance);
+        
+        console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
+        console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
       } catch (cdnError) {
         const errorMessage = cdnError instanceof Error ? cdnError.message : String(cdnError);
         
@@ -178,12 +156,80 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [isInitializing, isInitialized]);
 
+  const waitForArrowDependency = async (engineInstance: any) => {
+    const maxRetries = 5;
+    const baseDelay = 1000; // 1 second
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Checking Arrow dependency (attempt ${attempt}/${maxRetries})...`);
+        
+        // Test with a simple query to verify Arrow is working
+        const testResult = await engineInstance.query('SELECT 1 as arrow_test');
+        
+        if (testResult && testResult.data) {
+          console.log('✅ Apache Arrow dependency confirmed working');
+          return;
+        } else {
+          throw new Error('Query returned no data');
+        }
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
+          console.warn(`⚠️ Arrow dependency not ready (attempt ${attempt}/${maxRetries}):`, errorMessage);
+          
+          if (attempt < maxRetries) {
+            // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+            const delay = baseDelay * Math.pow(2, attempt - 1);
+            console.log(`⏳ Waiting ${delay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            console.error('❌ Arrow dependency failed to load after all retries');
+            throw new Error('Apache Arrow dependency failed to load after multiple attempts');
+          }
+        } else {
+          // Different error, might be more serious
+          console.error('❌ Non-Arrow error during dependency check:', error);
+          throw error;
+        }
+      }
+    }
+  };
+
+  const safeQuery = async (engineInstance: any, sql: string, description: string = 'query') => {
+    const maxRetries = 3;
+    const baseDelay = 500; // 0.5 seconds
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await engineInstance.query(sql);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
+          console.warn(`⚠️ Arrow issue during ${description} (attempt ${attempt}/${maxRetries}):`, errorMessage);
+          
+          if (attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(2, attempt - 1);
+            console.log(`⏳ Retrying ${description} in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          } else {
+            throw error;
+          }
+        } else {
+          throw error;
+        }
+      }
+    }
+  };
+
   const loadSampleData = async (engineInstance: any) => {
     try {
       console.log('📊 Loading sample datasets...');
       
-      // Verify engine is ready for data loading
-      const testResult = await engineInstance.query('SELECT 1 as ready');
+      // Verify engine is ready for data loading with safe query
+      const testResult = await safeQuery(engineInstance, 'SELECT 1 as ready', 'readiness check');
       if (!testResult || !testResult.data) {
         throw new Error('Engine not ready for data loading');
       }
@@ -204,8 +250,12 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log('🛍️ Loaded sample product data (200 records)');
       
       // Verify data was loaded successfully
-      const tableList = await engineInstance.listTables();
-      console.log('✅ Sample data loading completed. Available tables:', tableList);
+      try {
+        const tableList = await engineInstance.listTables();
+        console.log('✅ Sample data loading completed. Available tables:', tableList);
+      } catch (error) {
+        console.warn('⚠️ Could not verify table list, but data loading likely succeeded');
+      }
     } catch (error) {
       console.warn('⚠️ Failed to load sample data:', error);
       // Don't throw - this is not critical for demo functionality
@@ -222,7 +272,7 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!engine) {
         throw new Error('DataPrism engine not initialized');
       }
-      return await engine.query(sql);
+      return await safeQuery(engine, sql, 'user query');
     },
     [engine],
   );
@@ -251,7 +301,19 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!engine) {
       throw new Error('DataPrism engine not initialized');
     }
-    return await engine.listTables();
+    // Use safe query for table listing
+    try {
+      return await engine.listTables();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
+        console.warn('⚠️ Arrow issue during table listing, using fallback...');
+        // Try a simpler approach
+        const result = await safeQuery(engine, "SELECT name FROM sqlite_master WHERE type='table'", 'table listing');
+        return result?.data?.map((row: any) => row.name) || [];
+      }
+      throw error;
+    }
   }, [engine]);
 
   const getPerformanceMetrics = useCallback(async () => {
