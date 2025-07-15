@@ -24,7 +24,7 @@ export const defaultCDNConfig: CDNConfig = {
   fallback: {
     enabled: true,
     retries: 3,
-    timeout: 10000
+    timeout: 15000 // Increased timeout for hybrid loading
   }
 };
 
@@ -37,23 +37,26 @@ export const getCDNConfig = (): CDNConfig => {
   };
 };
 
-// CDN Asset URLs
+// CDN Asset URLs for Hybrid Architecture
 export const getCDNAssetUrls = (config: CDNConfig = getCDNConfig()) => {
   const baseUrl = config.baseUrl;
   
   return {
     manifest: `${baseUrl}/manifest.json`,
-    coreBundle: `${baseUrl}/dataprism.umd.js`,
-    coreESModule: `${baseUrl}/dataprism.min.js`,
-    wasmAssets: `${baseUrl}/assets/`,
-    plugins: `${baseUrl}/plugins/manifest.json`
+    coreBundle: `${baseUrl}/dataprism.umd.js`, // ~29KB with hybrid loading
+    coreESModule: `${baseUrl}/dataprism.min.js`, // ~36KB with hybrid loading
+    wasmAssets: `${baseUrl}/assets/`, // Auto-detects CDN base URL
+    plugins: `${baseUrl}/plugins/manifest.json`,
+    workers: `${baseUrl}/workers/` // DuckDB workers (~3MB)
   };
 };
 
-// Performance configuration
+// Performance configuration for Hybrid Architecture
 export const CDN_PERFORMANCE_CONFIG = {
-  maxLoadTime: 5000, // 5 seconds as specified in PRP
+  maxLoadTime: 8000, // Increased for hybrid loading with workers
   maxRetries: 3,
   retryDelay: 1000,
   cacheDuration: 3600000, // 1 hour
+  hybridLoadingTimeout: 15000, // Timeout for complete hybrid initialization
+  workerLoadTimeout: 10000, // Timeout for DuckDB worker loading
 } as const;

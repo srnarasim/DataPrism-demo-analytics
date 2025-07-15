@@ -92,9 +92,25 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         });
         
         await engineInstance.initialize();
-        console.log(`✅ DataPrism initialized from CDN (v${status.version}, ${status.latency}ms)`);
+        console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
+        console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
       } catch (cdnError) {
-        console.warn('⚠️ CDN DataPrism initialization failed, using mock implementation...', cdnError);
+        const errorMessage = cdnError instanceof Error ? cdnError.message : String(cdnError);
+        
+        // Provide specific guidance for CDN issues (should be rare with hybrid architecture)
+        if (errorMessage.includes('selectBundle') || errorMessage.includes('DuckDB')) {
+          console.warn('⚠️ CDN DataPrism DuckDB initialization failed, using mock implementation...', {
+            error: errorMessage,
+            note: 'This may indicate a network issue with the hybrid loading mechanism'
+          });
+        } else if (errorMessage.includes('timeout') || errorMessage.includes('network')) {
+          console.warn('⚠️ CDN DataPrism network timeout, using mock implementation...', {
+            error: errorMessage,
+            note: 'Hybrid architecture requires stable network for worker loading'
+          });
+        } else {
+          console.warn('⚠️ CDN DataPrism initialization failed, using mock implementation...', cdnError);
+        }
         setCdnStatus('error');
         
         // Use mock implementation as fallback
@@ -106,7 +122,7 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         });
         
         await engineInstance.initialize();
-        console.log('✅ DataPrism initialized with mock implementation');
+        console.log('✅ DataPrism initialized with mock implementation (CDN fallback active)');
       }
       
       setEngine(engineInstance);

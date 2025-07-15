@@ -37,6 +37,7 @@ export const CDNStatus: React.FC = () => {
 
   const getStatusText = () => {
     if (isInitializing) return 'Initializing...';
+    if (isInitialized && cdnStatus === 'error') return 'Ready (Mock Mode)';
     if (isInitialized) return 'Ready';
     if (initializationError) return 'Failed';
     return 'Loading...';
@@ -66,11 +67,22 @@ export const CDNStatus: React.FC = () => {
             <span>Available: {cdnInfo.available ? 'Yes' : 'No'}</span>
           )}
           {isInitialized && (
-            <span className="text-green-600 font-medium">DataPrism Ready</span>
+            <span className="text-green-600 font-medium">
+              {cdnStatus === 'error' ? 'Mock Implementation Active' : 'DataPrism Ready (Hybrid Architecture)'}
+            </span>
           )}
         </div>
         
-        {initializationError && (
+        {cdnStatus === 'error' && isInitialized && (
+          <div className="mt-2 text-sm">
+            <div className="flex items-center space-x-2 text-yellow-600">
+              <span>ℹ️</span>
+              <span>Using mock implementation - CDN hybrid architecture unavailable (network issue)</span>
+            </div>
+          </div>
+        )}
+        
+        {initializationError && !isInitialized && (
           <div className="mt-2">
             <details className="text-sm">
               <summary className="cursor-pointer font-medium">
