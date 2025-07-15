@@ -175,9 +175,17 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         // Test with a simple query to verify Arrow is working
         const testResult = await engineInstance.query('SELECT 1 as arrow_test');
         
-        if (testResult && testResult.data) {
+        console.log('📊 Query result structure:', testResult);
+        
+        // Check if the query result contains an error
+        if (testResult && testResult.error) {
+          console.warn('⚠️ Query returned with error:', testResult.error);
+          throw new Error(testResult.error.message || 'Query returned error');
+        }
+        
+        // Check if query succeeded and has data
+        if (testResult && testResult.data && testResult.data.length >= 0) {
           console.log('✅ Apache Arrow dependency confirmed working');
-          console.log('📊 Query result structure:', testResult);
           return;
         } else {
           console.warn('⚠️ Query succeeded but returned no data structure');
@@ -214,7 +222,30 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await engineInstance.query(sql);
+        const result = await engineInstance.query(sql);
+        
+        // Check if result contains an error
+        if (result && result.error) {
+          const errorMessage = result.error.message || String(result.error);
+          
+          if (errorMessage.includes('RecordBatchReader') || errorMessage.includes('Arrow')) {
+            console.warn(`⚠️ Arrow issue during ${description} (attempt ${attempt}/${maxRetries}):`, errorMessage);
+            
+            if (attempt < maxRetries) {
+              const delay = baseDelay * Math.pow(2, attempt - 1);
+              console.log(`⏳ Retrying ${description} in ${delay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, delay));
+              continue;
+            } else {
+              throw new Error(errorMessage);
+            }
+          } else {
+            throw new Error(errorMessage);
+          }
+        }
+        
+        // Return successful result
+        return result;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         
