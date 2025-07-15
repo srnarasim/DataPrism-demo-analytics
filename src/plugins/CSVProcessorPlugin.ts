@@ -101,8 +101,8 @@ export class CSVProcessorPlugin {
       } else if (input.stream) {
         // Process from stream
         const result = await this.processStream(input.stream);
-        data = result.data;
-        schema = result.schema;
+        data = result.data || [];
+        schema = result.schema || { columns: [] };
       } else {
         throw new Error('Invalid input: must provide file, data, or stream');
       }
@@ -232,7 +232,7 @@ export class CSVProcessorPlugin {
   /**
    * Process CSV stream
    */
-  async processStream(stream: ReadableStream): Promise<ReadableStream> {
+  async processStream(stream: ReadableStream): Promise<any> {
     try {
       console.log('🔄 Processing CSV stream...');
       
@@ -281,7 +281,10 @@ export class CSVProcessorPlugin {
       });
       
       console.log('✅ Stream processing completed');
-      return processedStream;
+      return {
+        data: processedData,
+        schema: await this.detectSchema(processedData)
+      };
       
     } catch (error) {
       console.error('❌ Stream processing failed:', error);

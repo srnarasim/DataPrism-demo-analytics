@@ -8,31 +8,7 @@
 // Global type declaration for DataPrism plugin interfaces
 declare global {
   interface Window {
-    DataPrism: {
-      DataPrismEngine: any;
-      // Plugin interfaces as resolved in GitHub Issue #18
-      IPlugin: any;
-      IDataProcessorPlugin: any;
-      IVisualizationPlugin: any;
-      IIntegrationPlugin: any;
-      IUtilityPlugin: any;
-      ILLMIntegrationPlugin: any;
-      ISecurityUtilityPlugin: any;
-      
-      // Plugin management system
-      PluginManager: any;
-      PluginRegistry: any;
-      DataPrismPluginSystem: any;
-      BasePlugin: any;
-      
-      // Plugin utilities
-      PluginUtils: any;
-      SecurityManager: any;
-      PluginSandbox: any;
-      ResourceManager: any;
-      EventBus: any;
-      EventBusFactory: any;
-    };
+    DataPrism: any;
   }
 }
 

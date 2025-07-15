@@ -216,7 +216,7 @@ export const PluginTestPage: React.FC = () => {
                   <strong>Plugin Types:</strong>
                   <div style={{ marginTop: '5px', fontSize: '12px' }}>
                     {Object.entries(managerStatus.pluginTypes).map(([type, count]) => (
-                      <div key={type}>{type}: {count}</div>
+                      <div key={type}>{type}: {String(count)}</div>
                     ))}
                   </div>
                 </div>
