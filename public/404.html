@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DataPrism Analytics Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .redirect-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h1>DataPrism Analytics Demo</h1>
+        <p>Redirecting to the application...</p>
+        
+        <div class="redirect-info">
+            <p><strong>Current URL:</strong></p>
+            <div class="code" id="current-url"></div>
+            <p><strong>Redirecting to:</strong></p>
+            <div class="code" id="redirect-url"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display current URL for debugging
+        document.getElementById('current-url').textContent = window.location.href;
+        
+        // GitHub Pages SPA redirect handling
+        (function() {
+            var currentPath = window.location.pathname;
+            var currentSearch = window.location.search;
+            var currentHash = window.location.hash;
+            
+            // Parse the current URL to determine the correct redirect
+            var pathSegments = currentPath.split('/').filter(function(segment) {
+                return segment.length > 0;
+            });
+            
+            var redirectPath = '/';
+            var basePath = '';
+            
+            if (pathSegments.length > 0) {
+                // Check if the first segment is a repository name
+                var firstSegment = pathSegments[0];
+                
+                // Known route patterns
+                var knownRoutes = ['data-explorer', 'query-lab', 'visualization'];
+                
+                if (knownRoutes.includes(firstSegment)) {
+                    // This is a direct route access like /data-explorer
+                    basePath = '';
+                    redirectPath = '/' + pathSegments.join('/');
+                } else {
+                    // This is likely a repository name like /DataPrism-demo-analytics
+                    basePath = '/' + firstSegment;
+                    if (pathSegments.length > 1) {
+                        redirectPath = basePath + '/' + pathSegments.slice(1).join('/');
+                    } else {
+                        redirectPath = basePath + '/';
+                    }
+                }
+            }
+            
+            // Construct the final redirect URL
+            var redirectUrl = window.location.origin + redirectPath + currentSearch + currentHash;
+            
+            // Display the redirect URL for debugging
+            document.getElementById('redirect-url').textContent = redirectUrl;
+            
+            // Store the redirect path for the main app
+            sessionStorage.setItem('spa-redirect', redirectPath);
+            
+            // Redirect after a short delay to show the debug info
+            setTimeout(function() {
+                window.location.replace(redirectUrl);
+            }, 2000);
+        })();
+    </script>
+</body>
+</html>

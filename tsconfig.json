@@ -33,5 +33,6 @@
     }
   },
   "include": ["src"],
+  "exclude": ["src/plugins/ChartJSVisualizationPlugin.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

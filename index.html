@@ -86,6 +86,33 @@
     <!-- Module entry point -->
     <script type="module" src="/src/main.tsx"></script>
     
+    <!-- GitHub Pages SPA routing support -->
+    <script>
+      // Handle GitHub Pages SPA routing
+      (function() {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect != location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+      
+      // Handle direct access to routes
+      (function() {
+        var path = window.location.pathname;
+        var search = window.location.search;
+        
+        // Check if we need to handle a redirect
+        if (search && search.indexOf('redirect=') !== -1) {
+          var redirectPath = new URLSearchParams(search).get('redirect');
+          if (redirectPath) {
+            sessionStorage.redirect = redirectPath;
+            history.replaceState(null, null, window.location.pathname);
+          }
+        }
+      })();
+    </script>
+    
     <!-- Loading screen management -->
     <script>
       // Hide loading screen when the app is ready

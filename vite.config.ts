@@ -9,7 +9,7 @@ import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: process.env.NODE_ENV === 'production' ? '/DataPrism-demo-analytics/' : '/',
+  base: process.env.NODE_ENV === 'production' ? (process.env.VITE_BASE_PATH || '/DataPrism-demo-analytics/') : '/',
   
   // Test configuration
   test: {

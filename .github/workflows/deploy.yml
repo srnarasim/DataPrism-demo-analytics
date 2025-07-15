@@ -70,6 +70,7 @@ jobs:
         env:
           VITE_DATAPRISM_CDN_URL: https://srnarasim.github.io/DataPrism
           VITE_DATAPRISM_VERSION: latest
+          VITE_BASE_PATH: /DataPrism-demo-analytics/
 
       - name: Validate build output
         run: |

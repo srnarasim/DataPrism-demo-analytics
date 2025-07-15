@@ -7,6 +7,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { CDNAssetLoader } from '@/utils/cdnLoader';
 import { getCDNConfig } from '@/config/cdn';
 import { arrowLoader } from '@/utils/arrowLoader';
+import { verifyPluginInterfaces, waitForPluginInterfaces } from '@/utils/pluginInterfaceVerification';
 
 interface DataPrismContextValue {
   engine: any | null;
@@ -19,6 +20,11 @@ interface DataPrismContextValue {
     latency?: number;
     available?: boolean;
   };
+  
+  // Plugin system
+  pluginSystemAvailable: boolean;
+  pluginInterfaces: any;
+  pluginManager: any;
   
   // Core operations
   query: (sql: string) => Promise<any>;
@@ -49,6 +55,11 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
     latency?: number;
     available?: boolean;
   }>({});
+
+  // Plugin system state
+  const [pluginSystemAvailable, setPluginSystemAvailable] = useState(false);
+  const [pluginInterfaces, setPluginInterfaces] = useState<any>(null);
+  const [pluginManager, setPluginManager] = useState<any>(null);
 
   const initializeDataPrism = useCallback(async () => {
     if (isInitializing || isInitialized) return;
@@ -224,6 +235,9 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       setEngine(engineInstance);
       setIsInitialized(true);
 
+      // Initialize plugin system
+      await initializePluginSystem();
+
       // Load sample datasets for demo
       await loadSampleData(engineInstance);
     } catch (error) {
@@ -234,6 +248,55 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsInitializing(false);
     }
   }, [isInitializing, isInitialized]);
+
+  const initializePluginSystem = async () => {
+    try {
+      console.log('🔄 Initializing DataPrism plugin system...');
+      
+      // Wait for plugin interfaces to be available
+      const pluginInterfacesReady = await waitForPluginInterfaces(5000);
+      
+      if (!pluginInterfacesReady) {
+        console.warn('⚠️ Plugin interfaces not available, continuing without plugin system');
+        return;
+      }
+
+      // Verify plugin interfaces
+      const verification = verifyPluginInterfaces();
+      
+      if (!verification.available) {
+        console.warn('⚠️ Plugin interface verification failed:', verification.error);
+        return;
+      }
+
+      // Set up plugin interfaces
+      setPluginInterfaces({
+        IPlugin: window.DataPrism.IPlugin,
+        IDataProcessorPlugin: window.DataPrism.IDataProcessorPlugin,
+        IVisualizationPlugin: window.DataPrism.IVisualizationPlugin,
+        IIntegrationPlugin: window.DataPrism.IIntegrationPlugin,
+        IUtilityPlugin: window.DataPrism.IUtilityPlugin,
+        ILLMIntegrationPlugin: window.DataPrism.ILLMIntegrationPlugin,
+        ISecurityUtilityPlugin: window.DataPrism.ISecurityUtilityPlugin,
+        BasePlugin: window.DataPrism.BasePlugin,
+        PluginUtils: window.DataPrism.PluginUtils,
+      });
+
+      // Initialize plugin manager
+      if (verification.managers.PluginManager) {
+        const manager = new window.DataPrism.PluginManager();
+        setPluginManager(manager);
+        console.log('✅ DataPrism Plugin Manager initialized');
+      }
+
+      setPluginSystemAvailable(true);
+      console.log('✅ DataPrism plugin system initialized successfully!');
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize plugin system:', error);
+      setPluginSystemAvailable(false);
+    }
+  };
 
   const resolveApacheArrowDependency = async (engineInstance: any) => {
     console.log('🔧 Starting manual Apache Arrow dependency resolution...');
@@ -544,6 +607,9 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
     initializationError,
     cdnStatus,
     cdnInfo,
+    pluginSystemAvailable,
+    pluginInterfaces,
+    pluginManager,
     query,
     loadData,
     getTableInfo,
