@@ -92,8 +92,19 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
         });
         
         await engineInstance.initialize();
-        console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
-        console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
+        
+        // Wait for DuckDB to be fully ready before proceeding
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Verify DuckDB connection is established
+        try {
+          await engineInstance.query('SELECT 1 as test');
+          console.log(`✅ DataPrism initialized from CDN with hybrid architecture (v${status.version}, ${status.latency}ms)`);
+          console.log('🎯 Active features: Fast CDN loading, reliable DuckDB access, universal compatibility');
+        } catch (connectionError) {
+          console.warn('⚠️ DuckDB connection not ready, retrying initialization...', connectionError);
+          throw new Error(`DuckDB connection failed: ${connectionError instanceof Error ? connectionError.message : String(connectionError)}`);
+        }
       } catch (cdnError) {
         const errorMessage = cdnError instanceof Error ? cdnError.message : String(cdnError);
         
@@ -107,6 +118,11 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
           console.warn('⚠️ CDN DataPrism network timeout, using mock implementation...', {
             error: errorMessage,
             note: 'Hybrid architecture requires stable network for worker loading'
+          });
+        } else if (errorMessage.includes('connection') || errorMessage.includes('from')) {
+          console.warn('⚠️ CDN DataPrism connection not ready, using mock implementation...', {
+            error: errorMessage,
+            note: 'DuckDB connection may need more time to initialize in hybrid mode'
           });
         } else {
           console.warn('⚠️ CDN DataPrism initialization failed, using mock implementation...', cdnError);
@@ -143,6 +159,12 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       console.log('📊 Loading sample datasets...');
       
+      // Verify engine is ready for data loading
+      const testResult = await engineInstance.query('SELECT 1 as ready');
+      if (!testResult || !testResult.data) {
+        throw new Error('Engine not ready for data loading');
+      }
+      
       // Sample sales data
       const salesData = generateSalesData(1000);
       await engineInstance.loadData(salesData, 'sales');
@@ -157,6 +179,10 @@ export const DataPrismProvider: React.FC<{ children: React.ReactNode }> = ({
       const productData = generateProductData(200);
       await engineInstance.loadData(productData, 'products');
       console.log('🛍️ Loaded sample product data (200 records)');
+      
+      // Verify data was loaded successfully
+      const tableList = await engineInstance.listTables();
+      console.log('✅ Sample data loading completed. Available tables:', tableList);
     } catch (error) {
       console.warn('⚠️ Failed to load sample data:', error);
       // Don't throw - this is not critical for demo functionality

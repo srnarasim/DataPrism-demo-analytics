@@ -24,7 +24,7 @@ export const defaultCDNConfig: CDNConfig = {
   fallback: {
     enabled: true,
     retries: 3,
-    timeout: 15000 // Increased timeout for hybrid loading
+    timeout: 20000 // Increased timeout for hybrid loading
   }
 };
 

@@ -44,7 +44,7 @@ export class CDNAssetLoader {
       await this.loadScript(urls.coreBundle);
       
       // Wait for global DataPrism to be available with extended timeout for hybrid loading
-      const hybridTimeout = this.config.fallback?.timeout || 15000;
+      const hybridTimeout = this.config.fallback?.timeout || 20000; // Increased to 20s for hybrid architecture
       const DataPrism = await this.waitForGlobal('DataPrism', hybridTimeout);
       
       console.log('✅ DataPrism loaded successfully from CDN with hybrid architecture');
