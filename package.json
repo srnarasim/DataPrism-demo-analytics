@@ -34,7 +34,7 @@
     "test:cdn": "vitest run tests/unit/cdnValidator.test.ts",
     "check:bundle-size": "npm run build && bundlesize",
     "monitor:performance": "vitest run tests/performance/lighthouse.test.ts",
-    "status:cdn": "curl -I https://srnarasim.github.io/DataPrism/cdn/manifest.json",
+    "status:cdn": "curl -I https://srnarasim.github.io/DataPrism/manifest.json",
     "report:validation": "npm run test:all -- --reporter=json > test-results/validation-report.json",
     "health:check": "npm run status:cdn && npm run test:unit:coverage",
     "lint": "eslint src --ext ts,tsx",

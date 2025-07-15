@@ -42,12 +42,12 @@ export const getCDNAssetUrls = (config: CDNConfig = getCDNConfig()) => {
   const baseUrl = config.baseUrl;
   
   return {
-    manifest: `${baseUrl}/cdn/manifest.json`,
-    coreBundle: `${baseUrl}/cdn/dataprism.umd.js`, // ~29KB with hybrid loading
-    coreESModule: `${baseUrl}/cdn/dataprism.min.js`, // ~36KB with hybrid loading
-    wasmAssets: `${baseUrl}/cdn/assets/`, // Auto-detects CDN base URL
-    plugins: `${baseUrl}/cdn/plugins/manifest.json`,
-    workers: `${baseUrl}/cdn/workers/` // DuckDB workers (~3MB)
+    manifest: `${baseUrl}/manifest.json`,
+    coreBundle: `${baseUrl}/dataprism.umd.js`, // ~29KB with hybrid loading
+    coreESModule: `${baseUrl}/dataprism.min.js`, // ~36KB with hybrid loading
+    wasmAssets: `${baseUrl}/assets/`, // Auto-detects CDN base URL
+    plugins: `${baseUrl}/plugins/manifest.json`,
+    workers: `${baseUrl}/workers/` // DuckDB workers (~3MB)
   };
 };
 
